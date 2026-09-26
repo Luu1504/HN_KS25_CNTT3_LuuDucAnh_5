@@ -1,14 +1,14 @@
 from fastapi import FastAPI, Depends, Response
 from sqlalchemy.orm import Session
-from typing import Optional
 
 import models
 import schemas
-from database import engine, get_db
+from database import engine, get_db, Base
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
 
 @app.get("/", response_model=schemas.APIResponse)
 def root():
@@ -18,6 +18,7 @@ def root():
         "message": "API đang chạy",
         "data": None
     }
+
 
 @app.get("/books", response_model=schemas.APIResponse)
 def get_books(db: Session = Depends(get_db)):
@@ -29,6 +30,8 @@ def get_books(db: Session = Depends(get_db)):
         "message": "Lấy danh sách sách thành công",
         "data": books_data
     }
+
+
 
 
 
@@ -50,6 +53,7 @@ def get_book(book_id: int, response: Response, db: Session = Depends(get_db)):
         "data": schemas.BookResponse.model_validate(book)
     }
 
+
 @app.post("/books", response_model=schemas.APIResponse, status_code=201)
 def create_book(book: schemas.BookCreate, response: Response, db: Session = Depends(get_db)):
     new_book = models.Book(
@@ -69,6 +73,7 @@ def create_book(book: schemas.BookCreate, response: Response, db: Session = Depe
         "data": schemas.BookResponse.model_validate(new_book)
     }
 
+
 @app.put("/books/{book_id}", response_model=schemas.APIResponse)
 def update_book(book_id: int, book_data: schemas.BookCreate, response: Response, db: Session = Depends(get_db)):
     book = db.query(models.Book).filter(models.Book.id == book_id).first()
@@ -80,7 +85,7 @@ def update_book(book_id: int, book_data: schemas.BookCreate, response: Response,
             "message": "Không tìm thấy sách",
             "data": None
         }
-    
+
     book.title = book_data.title
     book.author = book_data.author
     book.category = book_data.category
@@ -96,6 +101,7 @@ def update_book(book_id: int, book_data: schemas.BookCreate, response: Response,
         "data": schemas.BookResponse.model_validate(book)
     }
 
+
 @app.delete("/books/{book_id}", response_model=schemas.APIResponse)
 def delete_book(book_id: int, response: Response, db: Session = Depends(get_db)):
     book = db.query(models.Book).filter(models.Book.id == book_id).first()
@@ -107,7 +113,7 @@ def delete_book(book_id: int, response: Response, db: Session = Depends(get_db))
             "message": "Không tìm thấy sách",
             "data": None
         }
-    
+
     db.delete(book)
     db.commit()
 
