@@ -32,9 +32,6 @@ def get_books(db: Session = Depends(get_db)):
     }
 
 
-
-
-
 @app.get("/books/{book_id}", response_model=schemas.APIResponse)
 def get_book(book_id: int, response: Response, db: Session = Depends(get_db)):
     book = db.query(models.Book).filter(models.Book.id == book_id).first()
